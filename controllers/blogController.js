@@ -5,7 +5,7 @@ const userModel = require('../models/user.model');
 // Get all blog posts
 exports.getAllBlogsController = async (req, res) => {
     try {
-        const blogs = await blogModel.find().populate('author', 'username email');
+        const blogs = await blogModel.find().populate('user');
         if (!blogs) {
             return res.status(200).send({
                 success: false,
@@ -13,7 +13,7 @@ exports.getAllBlogsController = async (req, res) => {
             })
         }
         return res.status(200).send({
-            bolgCounts: blogs.length,
+            blogCounts: blogs.length,
             success: true,
             message: 'All blogs fetched successfully',
             blogs
@@ -31,10 +31,10 @@ exports.getAllBlogsController = async (req, res) => {
 // Create a new blog post
 exports.createBlogsController = async (req, res) => {
     try {
-        const { title, content, author, tags, image, likes, comments, user } = req.body;
+        const { title, content,  image, user } = req.body;
 
         // Basic validation
-        if (!title || !content || !author || !user) {
+        if (!title || !content || !image || !user) {
             return res.status(400).send({
                 success: false,
                 message: 'Please Provide All Field'
@@ -49,7 +49,7 @@ exports.createBlogsController = async (req, res) => {
             })
         }
 
-        const newBlog = new blogModel({ title, content, author, tags, image, likes, comments, user });
+        const newBlog = new blogModel({ title, content, image, user });
         const session = await mongoose.startSession()
         session.startTransaction()
         await newBlog.save({ session });
@@ -76,7 +76,8 @@ exports.createBlogsController = async (req, res) => {
 // Get a single blog post by ID
 exports.getBlogsIdController = async (req, res) => {
     try {
-        const blog = await blogModel.findById(req.params.id).populate('author', 'username email');
+        const blog = await blogModel.findById(req.params.id).populate('user', 'username email'); 
+
         if (!blog) {
             return res.status(404).send({
                 success: false,
